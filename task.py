@@ -137,8 +137,24 @@ class Task:
     def check_end_date(self):
         if self.end_date < self.start_date+self.duration:
             self.end_date=self.start_date+self.duration
-            warnings.warn("'end_date' chosen violates the condition: 'end_date'>'start_date' + 'duration'. 'end_date' set to minimum value: 'end_date'='start_date' + 'duration'")
+            #warnings.warn("'end_date' chosen violates the condition: 'end_date'>'start_date' + 'duration'. 'end_date' set to minimum value: 'end_date'='start_date' + 'duration'")
+
+
     
+if __name__ == "__main__":
+    s=Task(
+        name="Sim",
+        start_date=datetime.datetime(2021,1,1),
+        duration=datetime.timedelta(hours=25))
+    s.description="really boring test task"
+    
+    print(["end_date:",s.end_date])
+    s.duration=datetime.timedelta(days=25)
+    print(["duration: ",s.duration])
+    print(["end_date:",s.end_date])
+    s.duration=datetime.timedelta(days=1)
+    print(["duration: ",s.duration])
+    print(["end_date:",s.end_date])
     #method to minimize end_date
     #method to assign responsible?
     #method to promote/demote task level (relation with parent)

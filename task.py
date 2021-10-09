@@ -4,10 +4,11 @@ Spyder Editor
 
 This is a temporary script file.
 """
-import datetime
+from datetime import datetime,timedelta
 import warnings
 from enum import Enum
 import numpy as np
+import dateutil as dtu
 
 class Scenario(Enum):
     NOMINAL=0
@@ -17,13 +18,17 @@ class Scenario(Enum):
     
 
 
-class Task:
+class Task():
+    WorkingHours=timedelta(hours=8)
+    ScheduleStartHour=datetime(2000,1,1,hour=9)
+    ScheduleEndHour=datetime(2000,1,1,hour=18)
+    LunchHours=timedelta(hours=8)
     name: str
     description: str
     cost: tuple
-    start_date: datetime.datetime
-    end_date: datetime.datetime
-    duration: datetime.timedelta
+    start_date: datetime
+    end_date: datetime
+    duration: timedelta
     active_scenario: dict
     duration_db=dict
     cost_db: dict
@@ -45,7 +50,7 @@ class Task:
         
         self.task_id=id(self)
          # Initialize dbs:
-        self.duration_db={"NOMINAL":datetime.timedelta(seconds=0),"UPPER":datetime.timedelta(seconds=0),"LOWER": datetime.timedelta(seconds=0)}
+        self.duration_db={"NOMINAL":timedelta(seconds=0),"UPPER":timedelta(seconds=0),"LOWER": timedelta(seconds=0)}
         self.cost_db={"NOMINAL":(0,"EUR"),"UPPER":(0,"EUR"),"LOWER": (0,"EUR")}
     
         # ensure that the min quantity of user inputs is provided
@@ -100,10 +105,10 @@ class Task:
             if not isinstance(value, str):
                 raise TypeError("Attribute in " + str(str_attributes) + " not a string")
         if key in datetime_attributes:
-            if not (type(value) is datetime.datetime):
+            if not (type(value) is datetime):
                 raise TypeError("Attribute in " + str(datetime_attributes) + " not a datetime")
         if key in timedelta_attributes:
-            if not isinstance(value, datetime.timedelta):
+            if not isinstance(value, timedelta):
                 raise TypeError("Attribute in " + str(timedelta_attributes) + " not a timedelta")
         if key in tuple_attributes:
             if not isinstance(value, tuple):
@@ -138,27 +143,79 @@ class Task:
         if self.end_date < self.start_date+self.duration:
             self.end_date=self.start_date+self.duration
             #warnings.warn("'end_date' chosen violates the condition: 'end_date'>'start_date' + 'duration'. 'end_date' set to minimum value: 'end_date'='start_date' + 'duration'")
+    
+    @staticmethod
+    def get_workdays(from_date, to_date):
+        # if the start date is on a weekend, forward the date to next Monday
+        if from_date.weekday() > 4:
+            from_date = from_date + timedelta(days=7 - from_date.weekday())
+        # if the end date is on a weekend, rewind the date to the previous Friday
+        if to_date.weekday() > 4:
+            to_date = to_date - timedelta(days=to_date.weekday() - 4)
+        if from_date > to_date:
+            return 0
+        # that makes the difference easy, no remainders etc
+        diff_days = (to_date - from_date).days + 1
+        weeks = int(diff_days / 7)
+        return weeks * 5 + (to_date.weekday() - from_date.weekday()) + 1
+    
+    @staticmethod
+    def determine_workdays(duration):
+        durationInSecs=duration.total_seconds()
+        durationInWorkingDays=durationInSecs//Task.WorkingHours.total_seconds()
+        remainder=durationInSecs-durationInWorkingDays*Task.WorkingHours.total_seconds()
+        duration=timedelta(days=durationInWorkingDays,seconds=remainder)
+        return duration
+    
+    @staticmethod
+    def get_endWorkdate(startDate,duration):
+        days2add=duration.total_seconds()//(24*3600)
+        endDate=startDate
+        while days2add>0:
+            if endDate.weekday()==1:
+                endDate=endDate+timedelta(days=1)
+            elif endDate.weekday()==7:
+                endDate=endDate+timedelta(days=2)
+            elif endDate.weekday()==6:
+                endDate=endDate+timedelta(days=3)
+                days2add=days2add-1
+            else:
+                endDate=endDate+timedelta(days=1)
+                days2add=days2add-1
+        return endDate
+        
+        
+            
+    
+    
+    
+    def minimize_end_date(self,effort_level,work_hours,work_days):
+        #effort level measures the percentage of the time the responsible can work on the task
+        pass
 
+    
+    # Solve the issue with util days (use dtu: https://dateutil.readthedocs.io/en/stable/)
+    #method to minimize end_date
+    #method to promote/demote task level (relation with parent)
+    #method to check if added dependencies are in agreement with the level/parent
+    #method to validate currency
 
     
 if __name__ == "__main__":
     s=Task(
         name="Sim",
-        start_date=datetime.datetime(2021,1,1),
-        duration=datetime.timedelta(hours=25))
+        start_date=datetime(2021,1,1),
+        duration=timedelta(hours=25))
     s.description="really boring test task"
     
     print(["end_date:",s.end_date])
-    s.duration=datetime.timedelta(days=25)
+    s.duration=timedelta(days=25)
     print(["duration: ",s.duration])
     print(["end_date:",s.end_date])
-    s.duration=datetime.timedelta(days=1)
+    s.duration=timedelta(days=1)
     print(["duration: ",s.duration])
     print(["end_date:",s.end_date])
-    #method to minimize end_date
-    #method to assign responsible?
-    #method to promote/demote task level (relation with parent)
-    #method to check if added dependencies are in agreement with the level/parent
+
   
 
 

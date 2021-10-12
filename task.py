@@ -27,13 +27,15 @@ class Task():
     task_id:int
     
     
-    def __init__(self,name,start_date,duration,description="",cost=(0,"EUR")):
+    def __init__(self,name,start_date,duration,description="",cost=(0,"EUR"),parent=[],childs=[]):
         self.name=name
         self.start_date=start_date
         self.duration=duration
         self.description=description
         self.cost=cost
         self.task_id=id(self)
+        self.parent=parent
+        self.childs=childs
     
     @property
     def end_date(self):

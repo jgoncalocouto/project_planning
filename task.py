@@ -70,6 +70,22 @@ class Task():
         if attr=="_end_date":
             self._end_date=self.start_date+self.duration
             return self._end_date
+    def isSubtask(self,TaskParent):
+        self.parent=TaskParent
+        self.structure_level=TaskParent.structure_level+1
+        TaskParent.childs.append(self)
+        return TaskParent
+    
+    def isGroup(self,Subtasks):
+        eSubtasks=[]
+        #Should we do: self.childs=[]?
+        for task in Subtasks:
+            task.parent=self
+            task.structure_level=self.structure_level-1
+            eSubtasks.append(task)
+            self.childs.append(task)
+        return eSubtasks
+            
     
 
 

@@ -78,7 +78,7 @@ class Task():
     
     def isGroup(self,Subtasks):
         eSubtasks=[]
-        #Should we do: self.childs=[]?
+        self.childs=[]
         for task in Subtasks:
             task.parent=self
             task.structure_level=self.structure_level-1
@@ -89,7 +89,7 @@ class Task():
     
 
 
-    #method to promote/demote task level (relation with parent)
+    #method to promote/demote task level (relation with parent) -> Missing recalculation of start,end,duration for Task with childs
     #method to check if added dependencies are in agreement with the level/parent
     #method to validate currency
     

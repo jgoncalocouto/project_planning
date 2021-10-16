@@ -123,7 +123,21 @@ class Task():
     def addDependencies(self,dependencies):
         for task in dependencies:
             self.dependencies.append(task)
+    def __repr__(self):
+        dict2output=self.__dict__
+        dict2output["start_date"] = dict2output.pop("_start_date")
+        dict2output["end_date"] = dict2output.pop("_end_date")
+        dict2output["duration"] = dict2output.pop("_duration")
+        dict2output["dependencies"] = dict2output.pop("_dependencies")
         
+        if dict2output['dependencies']==[]:
+            del dict2output['dependencies']
+        if dict2output['parent']==[]:
+            del dict2output['parent']
+        if dict2output['childs']==[]:
+            del dict2output['childs']
+
+        return "Task(%s)" % (dict2output)
             
             
             

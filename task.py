@@ -123,23 +123,32 @@ class Task():
     def addDependencies(self,dependencies):
         for task in dependencies:
             self.dependencies.append(task)
+    def __str__(self):
+        msg2output="Task :"
+        msg2output+="lvl: {var} ,".format(var=self.structure_level)
+        msg2output+="{var} ,".format(var=self.name)
+        msg2output+="'{var}' ,".format(var=self.description)
+        msg2output+="from: {var} ".format(var=self.start_date)
+        msg2output+="to: {var} |".format(var=self.end_date)
+        msg2output+="working time: {var} ,".format(var=self.duration)
+        msg2output+="Cost:{var}".format(varname="cost",var=self.cost)
+        msg2output+=")"
+        return msg2output
+    
     def __repr__(self):
-        dict2output=self.__dict__
-        dict2output["start_date"] = dict2output.pop("_start_date")
-        dict2output["end_date"] = dict2output.pop("_end_date")
-        dict2output["duration"] = dict2output.pop("_duration")
-        dict2output["dependencies"] = dict2output.pop("_dependencies")
-        
-        if dict2output['dependencies']==[]:
-            del dict2output['dependencies']
-        if dict2output['parent']==[]:
-            del dict2output['parent']
-        if dict2output['childs']==[]:
-            del dict2output['childs']
-
-        return "Task(%s)" % (dict2output)
-            
-            
+        msg2output="Task("
+        msg2output+="'{var}',".format(var=self.name)
+        msg2output+="{var},".format(var=self.start_date)
+        msg2output+="{var},".format(var=self.duration)
+        msg2output+="{varname}='{var}',".format(varname="description",var=self.description)
+        msg2output+="{varname}={var},".format(varname="cost",var=self.cost)
+        msg2output+="{varname}={var},".format(varname="structure_level",var=self.structure_level)
+        msg2output+="{varname}={var},".format(varname="parent",var=self.parent)
+        msg2output+="{varname}={var},".format(varname="childs",var=self.childs)
+        msg2output+="{varname}={var},".format(varname="dependencies",var=self.dependencies)
+        msg2output+="{varname}={var},".format(varname="end_date",var=self.end_date)   
+        msg2output+=")"
+        return msg2output
             
     
     # if there are dependencies, the class is automatically changing the start_date if it is smaller than the max(end_date) of the dependencies -> does it make sense?

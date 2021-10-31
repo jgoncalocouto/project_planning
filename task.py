@@ -28,6 +28,8 @@ class Task():
     
     
     def __init__(self,name,start_date,duration,description="",cost=(0,"EUR"),structure_level=0,parent=[],childs=[],dependencies=[]):
+        self.childs=childs
+        self.dependencies=dependencies
         self.name=name
         self.start_date=start_date
         self.duration=duration
@@ -35,13 +37,16 @@ class Task():
         self.cost=cost
         self.task_id=id(self)
         self.parent=parent
-        self.childs=childs
-        self.dependencies=dependencies
+
+        print("init")
         self.structure_level=structure_level
         
     
     @property
     def end_date(self):
+        #analyze start_date dependency:
+        if self._end_date < self.start_date+self.duration:
+            self._end_date=self.start_date+self.duration
         #analyze subtasks:
         if self.childs:
             self.end_date=self.childs[0].end_date
@@ -52,10 +57,7 @@ class Task():
     
     @end_date.setter
     def end_date(self,end_date):
-        if end_date < self.start_date+self.duration:
-            self._end_date=self.start_date+self.duration
-        else:
-            self._end_date=end_date
+        self._end_date=end_date
     
     @property
     def duration(self):
@@ -68,7 +70,7 @@ class Task():
     def start_date(self):
         #analyze dependencies:
         for dependency in self.dependencies:
-            if dependency.end_date>self.start_date:
+            if dependency.end_date>self._start_date:
                 self.start_date=dependency.end_date
         #analyze subtasks:
         if self.childs:
@@ -84,6 +86,7 @@ class Task():
 
     @property
     def dependencies(self):
+        print("getter")
         return self._dependencies
     @dependencies.setter
     def dependencies(self,dependencies):
@@ -91,7 +94,13 @@ class Task():
             raise AttributeError("A subtask of a task cannot be a dependency of the same task")
         if self.parent in dependencies:
             raise AttributeError("The parent of a task cannot be a dependency of the that task")
+        print("setter")
         self._dependencies=dependencies
+    
+    def addDependencies(self,Tasks):
+        for task in Tasks:
+            if task not in self.dependencies:
+                self.dependencies.append(task)
 
     def check_end_date(self):
         if self.end_date < self.start_date+self.duration:
@@ -120,18 +129,15 @@ class Task():
             self.duration+=childs.duration
         return eSubtasks
 
-    def addDependencies(self,dependencies):
-        for task in dependencies:
-            self.dependencies.append(task)
     def __str__(self):
-        msg2output="Task :"
-        msg2output+="lvl: {var} ,".format(var=self.structure_level)
-        msg2output+="{var} ,".format(var=self.name)
-        msg2output+="'{var}' ,".format(var=self.description)
+        msg2output="Task: "
+        msg2output+="lvl= {var}, ".format(var=self.structure_level)
+        msg2output+="{var}, ".format(var=self.name)
+        msg2output+="'{var}', ".format(var=self.description)
         msg2output+="from: {var} ".format(var=self.start_date)
         msg2output+="to: {var} |".format(var=self.end_date)
-        msg2output+="working time: {var} ,".format(var=self.duration)
-        msg2output+="Cost:{var}".format(varname="cost",var=self.cost)
+        msg2output+="working time: {var}, ".format(var=self.duration)
+        msg2output+="Cost={var}".format(varname="cost",var=self.cost)
         msg2output+=")"
         return msg2output
     
@@ -146,14 +152,14 @@ class Task():
         msg2output+="{varname}={var},".format(varname="parent",var=self.parent)
         msg2output+="{varname}={var},".format(varname="childs",var=self.childs)
         msg2output+="{varname}={var},".format(varname="dependencies",var=self.dependencies)
-        msg2output+="{varname}={var},".format(varname="end_date",var=self.end_date)   
+        msg2output+="{varname}={var}".format(varname="end_date",var=self.end_date)   
         msg2output+=")"
         return msg2output
             
     
     # if there are dependencies, the class is automatically changing the start_date if it is smaller than the max(end_date) of the dependencies -> does it make sense?
     #method to promote/demote task level (relation with parent) -> Missing validation
-    #method to check if added dependencies are in agreement with the level/parent -> Missing validation
+    #method to check if added dependencies are in agreement with the level/parent -> Checked
     #method to validate currency
     # dunder methods missing:
         # __eq__ and similar
@@ -170,7 +176,22 @@ if __name__ == "__main__":
         start_date=datetime(2021,1,1),
         duration=timedelta(hours=25))
     s.description="really boring test task"
-    print(["end_date:",s.end_date])
+    
+    s2=Task(
+        name="Child_Sim_1",
+        start_date=datetime(2021,1,1),
+        duration=timedelta(hours=50))
+    
+    
+    s3=Task(
+        name="Child_Sim_2",
+        start_date=datetime(2021,1,1),
+        duration=timedelta(hours=50))
+    s3.dependencies=[s2]
+    s.dependencies=[s2,s3]
+
+    
+
 #     s.duration=timedelta(days=25)
 #     print(["duration: ",s.duration])
 #     print(["end_date:",s.end_date])

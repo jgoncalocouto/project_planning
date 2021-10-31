@@ -37,22 +37,20 @@ class Task():
         self.cost=cost
         self.task_id=id(self)
         self.parent=parent
-
-        print("init")
         self.structure_level=structure_level
         
     
     @property
     def end_date(self):
-        #analyze start_date dependency:
-        if self._end_date < self.start_date+self.duration:
-            self._end_date=self.start_date+self.duration
         #analyze subtasks:
         if self.childs:
             self.end_date=self.childs[0].end_date
             for child in self.childs:
-                if child.end_date>self.end_date:
+                if child.end_date>self._end_date:
                     self.end_date=child.end_date
+        #analyze start_date dependency:
+        if self._end_date < self._start_date+self.duration:
+            self.end_date=self._start_date+self.duration
         return self._end_date
     
     @end_date.setter
@@ -76,7 +74,7 @@ class Task():
         if self.childs:
             self.start_date=self.childs[0].start_date
             for child in self.childs:
-                if child.start_date<self.start_date:
+                if child.start_date<self._start_date:
                     self.start_date=child.start_date
         return self._start_date
     
@@ -86,7 +84,6 @@ class Task():
 
     @property
     def dependencies(self):
-        print("getter")
         return self._dependencies
     @dependencies.setter
     def dependencies(self,dependencies):
@@ -94,7 +91,6 @@ class Task():
             raise AttributeError("A subtask of a task cannot be a dependency of the same task")
         if self.parent in dependencies:
             raise AttributeError("The parent of a task cannot be a dependency of the that task")
-        print("setter")
         self._dependencies=dependencies
     
     def addDependencies(self,Tasks):
@@ -126,7 +122,7 @@ class Task():
             task.structure_level=self.structure_level-1
             eSubtasks.append(task)
             self.childs.append(task)
-            self.duration+=childs.duration
+            self.duration+=task.duration
         return eSubtasks
 
     def __str__(self):
@@ -158,8 +154,8 @@ class Task():
             
     
     # if there are dependencies, the class is automatically changing the start_date if it is smaller than the max(end_date) of the dependencies -> does it make sense?
+    # Between childs | dependencies who has priority when defining start | end_date ?  Is it always the same one? (To be solved) 
     #method to promote/demote task level (relation with parent) -> Missing validation
-    #method to check if added dependencies are in agreement with the level/parent -> Checked
     #method to validate currency
     # dunder methods missing:
         # __eq__ and similar
@@ -187,8 +183,7 @@ if __name__ == "__main__":
         name="Child_Sim_2",
         start_date=datetime(2021,1,1),
         duration=timedelta(hours=50))
-    s3.dependencies=[s2]
-    s.dependencies=[s2,s3]
+    
 
     
 

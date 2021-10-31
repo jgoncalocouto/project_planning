@@ -24,7 +24,7 @@ class Task():
     parent: int
     structure_level:int
     _dependencies: list
-    task_id:int
+    _childs:list
     
     
     def __init__(self,name,start_date,duration,description="",cost=(0,"EUR"),structure_level=0,parent=[],childs=[],dependencies=[]):
@@ -33,6 +33,7 @@ class Task():
         self.name=name
         self.start_date=start_date
         self.duration=duration
+        self._end_date=self.start_date+self.duration
         self.description=description
         self.cost=cost
         self.task_id=id(self)
@@ -99,16 +100,7 @@ class Task():
         for task in Tasks:
             if task not in self.dependencies:
                 self.dependencies.append(task)
-
-    def check_end_date(self):
-        if self.end_date < self.start_date+self.duration:
-            self.end_date=self.start_date+self.duration
-            #warnings.warn("'end_date' chosen violates the condition: 'end_date'>'start_date' + 'duration'. 'end_date' set to minimum value: 'end_date'='start_date' + 'duration'")
-    
-    def __getattr__(self, attr):
-        if attr=="_end_date":
-            self._end_date=self.start_date+self.duration
-            return self._end_date
+        
     def isSubtask(self,TaskParent):
         self.parent=TaskParent
         self.structure_level=TaskParent.structure_level+1

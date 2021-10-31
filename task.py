@@ -29,7 +29,7 @@ class Task():
     
     def __init__(self,name,start_date,duration,description="",cost=(0,"EUR"),structure_level=0,parent=[],childs=[],dependencies=[]):
         self.childs=childs
-        self.dependencies=dependencies
+        self._dependencies=dependencies
         self.name=name
         self.start_date=start_date
         self.duration=duration
@@ -48,7 +48,7 @@ class Task():
             for child in self.childs:
                 if child.end_date>self._end_date:
                     self.end_date=child.end_date
-        #analyze start_date dependency:
+        #analyze start_date:
         if self._end_date < self._start_date+self.duration:
             self.end_date=self._start_date+self.duration
         return self._end_date
@@ -66,16 +66,17 @@ class Task():
     
     @property
     def start_date(self):
-        #analyze dependencies:
-        for dependency in self.dependencies:
-            if dependency.end_date>self._start_date:
-                self.start_date=dependency.end_date
         #analyze subtasks:
         if self.childs:
             self.start_date=self.childs[0].start_date
             for child in self.childs:
                 if child.start_date<self._start_date:
                     self.start_date=child.start_date
+        #analyze dependencies:
+        for dependency in self.dependencies:
+            if dependency._end_date>self._start_date:
+                self._start_date=dependency._end_date
+
         return self._start_date
     
     @start_date.setter
@@ -91,6 +92,7 @@ class Task():
             raise AttributeError("A subtask of a task cannot be a dependency of the same task")
         if self.parent in dependencies:
             raise AttributeError("The parent of a task cannot be a dependency of the that task")
+        print("dependencies.setter")
         self._dependencies=dependencies
     
     def addDependencies(self,Tasks):
@@ -157,6 +159,7 @@ class Task():
     # Between childs | dependencies who has priority when defining start | end_date ?  Is it always the same one? (To be solved) 
     #method to promote/demote task level (relation with parent) -> Missing validation
     #method to validate currency
+    #BUG: dependency.setter is not correctly checking for child/parents -> check code
     # dunder methods missing:
         # __eq__ and similar
         # __lt__ __gt__ and similar
@@ -183,6 +186,14 @@ if __name__ == "__main__":
         name="Child_Sim_2",
         start_date=datetime(2021,1,1),
         duration=timedelta(hours=50))
+    
+    s.isGroup([s2,s3])
+    
+    s4=Task(
+        name="Dep1",
+        start_date=datetime(2025,1,1),
+        duration=timedelta(hours=50))
+    s.dependencies=[s4]
     
 
     

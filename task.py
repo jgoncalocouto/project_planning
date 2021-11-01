@@ -28,7 +28,7 @@ class Task():
     
     
     def __init__(self,name,start_date,duration,description="",cost=(0,"EUR"),structure_level=0,parent=[],childs=[],dependencies=[]):
-        self.childs=childs
+        self._childs=childs
         self._dependencies=dependencies
         self.name=name
         self.start_date=start_date
@@ -60,6 +60,11 @@ class Task():
     
     @property
     def duration(self):
+        #analyze subtasks:
+        if self.childs:
+            self._duration=timedelta()
+            for child in self.childs:
+                self._duration+=child.duration
         return self._duration
     @duration.setter
     def duration(self,duration):
@@ -101,6 +106,21 @@ class Task():
             if task not in self.dependencies:
                 self.dependencies.append(task)
         
+    @property
+    def childs(self):
+        return self._childs
+    @childs.setter
+    def childs(self,childs):
+        if self.parent in childs:
+            raise AttributeError("A task can be set as a child of another if it already the parent.")
+        for task in childs:
+            if task in self.childs:
+                childs.remove(task)
+            if task in self._dependencies:
+                self._dependencies.remove(task)
+                print("A task can't be simultaneously a child and a dependency of another. Task removed as dependency and added as a child")
+        self._childs=childs
+    
     def isSubtask(self,TaskParent):
         self.parent=TaskParent
         self.structure_level=TaskParent.structure_level+1
@@ -110,13 +130,11 @@ class Task():
     def isGroup(self,Subtasks):
         eSubtasks=[]
         self.childs=[]
-        self.duration=timedelta()
         for task in Subtasks:
             task.parent=self
             task.structure_level=self.structure_level-1
             eSubtasks.append(task)
             self.childs.append(task)
-            self.duration+=task.duration
         return eSubtasks
 
     def __str__(self):
@@ -148,10 +166,8 @@ class Task():
             
     
     # if there are dependencies, the class is automatically changing the start_date if it is smaller than the max(end_date) of the dependencies -> does it make sense?
-    # Between childs | dependencies who has priority when defining start | end_date ?  Is it always the same one? (To be solved) 
     #method to promote/demote task level (relation with parent) -> Missing validation
     #method to validate currency
-    #BUG: dependency.setter is not correctly checking for child/parents -> check code
     # dunder methods missing:
         # __eq__ and similar
         # __lt__ __gt__ and similar

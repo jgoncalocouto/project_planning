@@ -157,9 +157,22 @@ class Task():
         msg2output+="{varname}='{var}',".format(varname="description",var=self.description)
         msg2output+="{varname}={var},".format(varname="cost",var=self.cost)
         msg2output+="{varname}={var},".format(varname="structure_level",var=self.structure_level)
-        msg2output+="{varname}={var},".format(varname="parent",var=self.parent)
-        msg2output+="{varname}={var},".format(varname="childs",var=self.childs)
-        msg2output+="{varname}={var},".format(varname="dependencies",var=self.dependencies)
+        
+        if self.parent:
+            msg2output+="{varname}='{var}',".format(varname="parent",var=self.parent.name)
+        else:
+            msg2output+="{varname}={var},".format(varname="parent",var=[])
+        
+        
+        childsnames=[]
+        for child in self.childs:
+            childsnames.append(child.name)
+        msg2output+="{varname}={var},".format(varname="childs",var=childsnames)
+        
+        dependenciesnames=[]
+        for dependency in self.dependencies:
+            dependenciesnames.append(dependency.name)    
+        msg2output+="{varname}={var},".format(varname="dependencies",var=dependenciesnames)
         msg2output+="{varname}={var}".format(varname="end_date",var=self.end_date)   
         msg2output+=")"
         return msg2output
